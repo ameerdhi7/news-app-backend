@@ -15,7 +15,7 @@ Route::middleware('auth:sanctum')->post('/auth/logout', [ApiTokenController::cla
 
 // News related routes
 Route::prefix("v1")->group(function () {
-    Route::prefix("articles")
+    Route::prefix("news")
         ->controller(NewsController::class)
         ->group(function () {
             Route::get("/", "home");
