@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Services\Article\Interfaces;
+namespace App\Services\News\Interfaces;
 
+use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Collection;
 
 interface NewsClientI
 {
-    public function getNews(): array;
+    public function getNews(): Collection;
 
     public function search(): array;
 
-    public function mapResult(): Collection;
+    public function mapResult(Response $response): Collection;
 
     public function getNewsByUserPreferences(): Collection;
 }
