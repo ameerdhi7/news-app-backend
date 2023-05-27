@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 
 class ApiTokenController extends Controller
 {
-    public function register(ApiTokenRegisterRequest $request)
+    public function register(ApiTokenRegisterRequest $request): \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Http\JsonResponse|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
     {
         $isExists = User::where('email', $request->email)->exists();
         if ($isExists) {
@@ -23,16 +23,16 @@ class ApiTokenController extends Controller
             'password' => Hash::make($request->password)
         ]);
 
-        $token = $user->createToken($request->token_name);
+        $token = $user->createToken($request->email);
 
 
-        return [
+        return response([
             'token' => $token->plainTextToken,
             'user' => $user
-        ];
+        ]);
     }
 
-    public function login(ApiTokenLoginRequest $request)
+    public function login(ApiTokenLoginRequest $request): \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Http\JsonResponse|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
     {
         $user = User::where('email', $request->email)->first();
 
@@ -40,17 +40,17 @@ class ApiTokenController extends Controller
             return response()->json(['error' => "Invalid credentials"], 401);
         }
 
-        $user->tokens()->where('name', $request->token_name)->delete();
+        $user->tokens()->where('name', $request->email)->delete();
 
-        $token = $user->createToken($request->token_name);
+        $token = $user->createToken($request->email);
 
-        return [
+        return response([
             'token' => $token->plainTextToken,
             'user' => $user
-        ];
+        ]);
     }
 
-    public function logout(Request $request)
+    public function logout(Request $request): \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
     {
         $request->user()->currentAccessToken()->delete();
 
