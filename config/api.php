@@ -9,11 +9,6 @@ return [
             "access_token" => env("NEW_API_TOKEN"),
             "class" => NewsApiClient::class
         ],
-        "the_guardian_service" => [
-            "base_url" => env("THE_GUARDIAN_SERVICE_ACCESS_TOKEN", "https://content.guardianapis.com/"),
-            "access_token" => env("THE_GUARDIAN_SERVICE_BASE_URL"),
-            "class" => null
-        ]
     ]
 
 ];

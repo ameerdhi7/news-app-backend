@@ -2,7 +2,9 @@
 
 namespace App\Services\News;
 
-class NewsService
+use App\Models\PreferenceOption;
+
+class FetchNewsService
 {
     protected array $clients;
 
@@ -39,4 +41,33 @@ class NewsService
         // Return the collected results as a collection
         return collect($results);
     }
+
+    public function getCategories()
+    {
+        $results = [];
+        foreach ($this->clients as $client) {
+            $results[] = (new $client)->getCategories();
+        }
+        return $results;
+    }
+
+    public function getSources()
+    {
+        $results = [];
+        foreach ($this->clients as $client) {
+            $results[] = (new $client)->getSources();
+        }
+        return $results;
+    }
+
+    public function getAuthors()
+    {
+        $results = [];
+        foreach ($this->clients as $client) {
+            $results[] = (new $client)->getAuthors();
+        }
+        return $results;
+    }
+
+
 }

@@ -19,5 +19,6 @@ Route::prefix("v1")->group(function () {
         ->controller(NewsController::class)
         ->group(function () {
             Route::get("/", "home");
+            Route::get("/preferences/options", "preferencesOptions");
         });
 });

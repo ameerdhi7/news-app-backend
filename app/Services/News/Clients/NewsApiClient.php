@@ -3,14 +3,12 @@
 namespace App\Services\News\Clients;
 
 use App\Models\Article;
+use App\Models\PreferenceOption;
 use App\Services\News\Interfaces\NewsClientI;
-use Dflydev\DotAccessData\Data;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Response;
-use Illuminate\Http\Client\HttpClientException;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class NewsApiClient implements NewsClientI
@@ -36,6 +34,10 @@ class NewsApiClient implements NewsClientI
         ];
         return new Client($config);
     }
+
+    /**
+     * @return Collection<Article>
+     */
 
     public function getNews(): Collection
     {
@@ -74,5 +76,58 @@ class NewsApiClient implements NewsClientI
 
     function getNewsByUserPreferences(): Collection
     {
+    }
+
+    public function getCategories(): array
+    {
+        /*
+         * According to the NewsApi documentation and in order to make the categories
+         * options more synced with the data sources
+        */
+        $categories = [
+            "business",
+            "entertainment",
+            "general",
+            "health",
+            "science",
+            "sports",
+            "technology",
+        ];
+
+        $mappedResults = array_map(function ($item) {
+            return new PreferenceOption(["name" => $item, "type" => "category"]);
+        }, $categories);
+        return $mappedResults;
+    }
+
+    public function getSources()
+    {
+        $url = "/v2/top-headlines/sources";
+        try {
+            $response = $this->client->get($url);
+            $body = $response->getBody();
+            $decodedBody = json_decode($body, true);
+            $sourcesArray = $decodedBody["sources"];
+            $mappedResults = array_map(function ($item) {
+                return new PreferenceOption(["name" => $item["name"], "type" => "source"]);
+            }, $sourcesArray);
+            return $mappedResults;
+        } catch (GuzzleException $httpClientException) {
+            Log::error($httpClientException->getMessage());
+        }
+    }
+
+    public function getAuthors()
+    {
+        //scrap authors from the main get news results
+        $newsCollection = $this->getNews();
+        $authors = $newsCollection
+            ->where("author", "!=", null)
+            ->pluck("author")
+            ->toArray();
+        $mappedResults = array_map(function ($item) {
+            return new PreferenceOption(["name" => $item, "type" => "author"]);
+        }, $authors);
+        return $mappedResults;
     }
 }
