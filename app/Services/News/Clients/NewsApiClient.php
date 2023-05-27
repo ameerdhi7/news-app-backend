@@ -78,6 +78,9 @@ class NewsApiClient implements NewsClientI
     {
     }
 
+    /**
+     * @return array|PreferenceOption[]
+     */
     public function getCategories(): array
     {
         /*
@@ -100,7 +103,10 @@ class NewsApiClient implements NewsClientI
         return $mappedResults;
     }
 
-    public function getSources()
+    /**
+     * @return array|PreferenceOption[]
+     */
+    public function getSources(): array
     {
         $url = "/v2/top-headlines/sources";
         try {
@@ -117,7 +123,10 @@ class NewsApiClient implements NewsClientI
         }
     }
 
-    public function getAuthors()
+    /**
+     * @return array|PreferenceOption[]
+     */
+    public function getAuthors(): array
     {
         //scrap authors from the main get news results
         $newsCollection = $this->getNews();

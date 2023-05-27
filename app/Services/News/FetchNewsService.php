@@ -42,7 +42,7 @@ class FetchNewsService
         return collect($results);
     }
 
-    public function getCategories()
+    public function getCategories(): array
     {
         $results = [];
         foreach ($this->clients as $client) {
@@ -51,7 +51,7 @@ class FetchNewsService
         return $results;
     }
 
-    public function getSources()
+    public function getSources(): array
     {
         $results = [];
         foreach ($this->clients as $client) {
@@ -60,7 +60,7 @@ class FetchNewsService
         return $results;
     }
 
-    public function getAuthors()
+    public function getAuthors(): array
     {
         $results = [];
         foreach ($this->clients as $client) {

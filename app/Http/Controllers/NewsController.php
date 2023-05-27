@@ -20,6 +20,7 @@ class NewsController extends Controller
     public function home(): HomeArticleCollection
     {
         $resultCollection = $this->newsRepository->getHomeFeed();
+
         return new HomeArticleCollection($resultCollection);
     }
 

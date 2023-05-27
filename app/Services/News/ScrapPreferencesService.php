@@ -13,17 +13,20 @@ use Ramsey\Collection\Collection;
 class ScrapPreferencesService
 {
 
-    public function feedDatabase()
+    public function feedDatabase(): void
     {
         $fetchNewsService = new FetchNewsService();
+        //get and combine results
         $results = [
             $fetchNewsService->getCategories(),
             $fetchNewsService->getSources(),
             $fetchNewsService->getAuthors()
         ];
+
         $flatten = Arr::flatten($results);
         $asCollection = collect($flatten);
         $asArray = $asCollection->toArray();
+        //insert or already exists records
         PreferenceOption::insertOrIgnore($asArray);
     }
 
