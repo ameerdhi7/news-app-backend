@@ -23,7 +23,7 @@ class AuthApisTest extends TestCase
             "token_name" => $email
         ];
 
-        $response = $this->post('/api/auth/register', $userData);
+        $response = $this->post('/api/v1/auth/register', $userData);
 
         $response->assertStatus(200);
 //        $response->assertJson([
@@ -41,7 +41,7 @@ class AuthApisTest extends TestCase
             'password' => bcrypt('password'),
         ]);
 
-        $response = $this->post('/api/auth/login', [
+        $response = $this->post('/api/v1/auth/login', [
             'email' => $user->email,
             'password' => 'password',
             "token_name" => $user->name
@@ -55,7 +55,7 @@ class AuthApisTest extends TestCase
 
     public function test_unauthorized_access()
     {
-        $response = $this->getJson('/api/user');
+        $response = $this->getJson('/api/v1/user');
 
         $response->assertStatus(401);
     }
@@ -66,7 +66,7 @@ class AuthApisTest extends TestCase
 
         Sanctum::actingAs($user);
 
-        $response = $this->get('/api/user');
+        $response = $this->get('/api/v1/user');
 
         $response->assertStatus(200);
         $response->assertJson([
