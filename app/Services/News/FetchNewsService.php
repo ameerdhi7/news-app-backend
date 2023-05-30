@@ -2,7 +2,9 @@
 
 namespace App\Services\News;
 
+use App\Http\Requests\SearchRequest;
 use App\Models\PreferenceOption;
+use mysql_xdevapi\Collection;
 
 class FetchNewsService
 {
@@ -65,6 +67,15 @@ class FetchNewsService
         $results = [];
         foreach ($this->clients as $client) {
             $results[] = (new $client)->getAuthors();
+        }
+        return $results;
+    }
+
+    public function search(SearchRequest $searchRequest)
+    {
+        $results = [];
+        foreach ($this->clients as $client) {
+            $results[] = (new $client)->search(searchRequest: $searchRequest);
         }
         return $results;
     }

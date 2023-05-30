@@ -16,8 +16,7 @@ class ApiTokenRegisterRequest extends FormRequest
         return [
             'name' => 'required',
             'email' => 'required|email',
-            'password' => 'required|min:6',
-            'token_name' => 'required'
+            'password' => 'required|min:6'
         ];
     }
 }

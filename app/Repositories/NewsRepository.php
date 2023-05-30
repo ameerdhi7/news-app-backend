@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Http\Requests\SearchRequest;
 use App\Models\PreferenceOption;
 use App\Repositories\Interfaces\NewsRepositoryI;
 use App\Services\News\FetchNewsService;
@@ -52,5 +53,16 @@ class NewsRepository implements NewsRepositoryI
         $groupedByType = $mergedCollection->groupBy("type");
 
         return $groupedByType;
+    }
+
+    /**
+     * @return Collection
+     */
+    public function search(SearchRequest $searchRequest): Collection
+    {
+        $newsService = new FetchNewsService();
+        $results = $newsService->search($searchRequest);
+        $asCollection =  collect($results);
+        return $asCollection->flatten();
     }
 }

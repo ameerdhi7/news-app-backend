@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SearchRequest;
 use App\Http\Resources\HomeArticleCollection;
 use App\Http\Resources\PreferenceOptionsCollection;
 use App\Repositories\Interfaces\NewsRepositoryI;
@@ -29,5 +30,11 @@ class NewsController extends Controller
     {
         $resultCollection = $this->newsRepository->getPreferencesOptions();
         return new PreferenceOptionsCollection($resultCollection);
+    }
+
+    public function search(SearchRequest $searchRequest): HomeArticleCollection
+    {
+        $resultCollection = $this->newsRepository->search(searchRequest: $searchRequest);
+        return new HomeArticleCollection($resultCollection);
     }
 }

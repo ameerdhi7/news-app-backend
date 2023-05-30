@@ -2,6 +2,7 @@
 
 namespace App\Services\News\Clients;
 
+use App\Http\Requests\SearchRequest;
 use App\Models\Article;
 use App\Models\PreferenceOption;
 use App\Services\News\Interfaces\NewsClientI;
@@ -44,22 +45,41 @@ class NewsApiClient implements NewsClientI
         $url = "/v2/top-headlines?country=us";
         try {
             $response = $this->client->get($url);
-            return $this->mapResult($response);
+            $body = $response->getBody();
+            $decodedBody = json_decode($body, true);
+            $articles = $decodedBody["articles"];
+            return $this->mapResult($articles);
         } catch (GuzzleException $httpClientException) {
             Log::error($httpClientException->getMessage());
         }
     }
 
-    public function search(): array
+    public function search(SearchRequest $searchRequest): Collection
     {
-        // TODO: Implement search() method.
+        $url = "/v2/everything?";
+        $options = $searchRequest->validated();
+        $query = $options["searchQuery"];
+        $url .= "q={$query}";
+        $containSource = isset($options["source"]);
+        if ($containSource) {
+            $url .= "&sources={$options["source"]}";
+        }
+        $url .= "&pageSize=5";
+        try {
+            $response = $this->client->get($url);
+            $body = $response->getBody();
+            $decodedBody = json_decode($body, true);
+            $articles = $decodedBody["articles"];
+            return $this->mapResult($articles);
+        } catch (GuzzleException $httpClientException) {
+            Log::error($httpClientException->getMessage());
+        }
+
     }
 
-    public function mapResult(Response $response): Collection
+    public function mapResult(array $articles): Collection
     {
-        $body = $response->getBody();
-        $decodedBody = json_decode($body, true);
-        $articles = $decodedBody["articles"];
+
         //map results to adhere to Article form
         $mappedArticles = array_map(function ($article) {
             $map = [
@@ -108,7 +128,7 @@ class NewsApiClient implements NewsClientI
      */
     public function getSources(): array
     {
-        $url = "/v2/top-headlines/sources";
+        $url = " / v2 / top - headlines / sources";
         try {
             $response = $this->client->get($url);
             $body = $response->getBody();
@@ -131,7 +151,7 @@ class NewsApiClient implements NewsClientI
         //scrap authors from the main get news results
         $newsCollection = $this->getNews();
         $authors = $newsCollection
-            ->where("author", "!=", null)
+            ->where("author", " != ", null)
             ->pluck("author")
             ->toArray();
         $mappedResults = array_map(function ($item) {

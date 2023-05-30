@@ -12,9 +12,9 @@ Route::prefix("v1")->group(function () {
         ->get('/user', function (Request $request) {
             return $request->user();
         });
-    Route::post('/auth/login', [ApiTokenController::class, 'login']);
-    Route::post('/auth/register', [ApiTokenController::class, 'register']);
-    Route::middleware('auth:sanctum')->post('/auth/logout', [ApiTokenController::class, 'logout']);
+    Route::post('/login', [ApiTokenController::class, 'login']);
+    Route::post('/register', [ApiTokenController::class, 'register']);
+    Route::middleware('auth:sanctum')->post('/logout', [ApiTokenController::class, 'logout']);
 
     // News related routes
     Route::prefix("news")
@@ -22,5 +22,6 @@ Route::prefix("v1")->group(function () {
         ->group(function () {
             Route::get("/", "home");
             Route::get("/preferences/options", "preferencesOptions");
+            Route::get("/search", "search");
         });
 });

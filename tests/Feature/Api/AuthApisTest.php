@@ -23,7 +23,7 @@ class AuthApisTest extends TestCase
             "token_name" => $email
         ];
 
-        $response = $this->post('/api/v1/auth/register', $userData);
+        $response = $this->post('/api/v1/register', $userData);
 
         $response->assertStatus(200);
 //        $response->assertJson([
@@ -41,7 +41,7 @@ class AuthApisTest extends TestCase
             'password' => bcrypt('password'),
         ]);
 
-        $response = $this->post('/api/v1/auth/login', [
+        $response = $this->post('/api/v1/login', [
             'email' => $user->email,
             'password' => 'password',
             "token_name" => $user->name

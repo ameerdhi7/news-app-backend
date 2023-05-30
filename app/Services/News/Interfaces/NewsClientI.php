@@ -2,6 +2,7 @@
 
 namespace App\Services\News\Interfaces;
 
+use App\Http\Requests\SearchRequest;
 use App\Models\Article;
 use App\Models\PreferenceOption;
 use GuzzleHttp\Psr7\Response;
@@ -15,15 +16,15 @@ interface NewsClientI
     public function getNews(): Collection;
 
     /**
-     * @return array
+     * @param SearchRequest
      */
-    public function search(): array;
+    public function search(SearchRequest $searchRequest);
 
     /**
-     * @param Response $response
+     * @param array $articles
      * @return Collection<Article>
      */
-    public function mapResult(Response $response): Collection;
+    public function mapResult(array $articles): Collection;
 
     /**
      * @return Collection
