@@ -45,7 +45,6 @@ class User extends Authenticatable
     public function preferences(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(UserPreference::class);
-
     }
 
 }

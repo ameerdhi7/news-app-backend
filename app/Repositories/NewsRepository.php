@@ -4,8 +4,10 @@ namespace App\Repositories;
 
 use App\Http\Requests\SearchRequest;
 use App\Models\PreferenceOption;
+use App\Models\User;
 use App\Repositories\Interfaces\NewsRepositoryI;
 use App\Services\News\FetchNewsService;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
 
 class NewsRepository implements NewsRepositoryI
@@ -25,7 +27,7 @@ class NewsRepository implements NewsRepositoryI
 
     public function getPreferencesOptions(): Collection
     {
-        $fields = ["id","name", "type"];
+        $fields = ["id", "name", "type"];
         // all categories should be returned
         $allCategories = PreferenceOption::select($fields)
             ->where("type", "category")
@@ -63,7 +65,42 @@ class NewsRepository implements NewsRepositoryI
     {
         $newsService = new FetchNewsService();
         $results = $newsService->search($searchRequest);
-        $asCollection =  collect($results);
+        $asCollection = collect($results);
         return $asCollection->flatten();
     }
+
+    /**
+     * @param Authenticatable $user
+     * @param array $preferences
+     * @return void
+     */
+
+    public function savePreferences(Authenticatable $user, array $preferences)
+    {
+        // Retrieve the user's current preferences
+        $currentPreferences = $user->preferences()->pluck('id')->toArray();
+
+        // Determine the preferences to attach and detach
+        $newPreferences = $this->mapPreferences($preferences);
+        $preferencesToAttach = array_diff($newPreferences, $currentPreferences);
+        $preferencesToDetach = array_diff($currentPreferences, $newPreferences);
+
+        // Sync the preferences
+        $user->preferences()->attach($preferencesToAttach);
+        $user->preferences()->detach($preferencesToDetach);
+    }
+
+    private function mapPreferences(array $preferences)
+    {
+        $mappedPreferences = [];
+
+        foreach ($preferences as $type => $values) {
+            foreach ($values as $value) {
+                $mappedPreferences[] = $value;
+            }
+        }
+
+        return $mappedPreferences;
+    }
+
 }
