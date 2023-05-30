@@ -25,18 +25,19 @@ class NewsRepository implements NewsRepositoryI
 
     public function getPreferencesOptions(): Collection
     {
+        $fields = ["id","name", "type"];
         // all categories should be returned
-        $allCategories = PreferenceOption::select("name", "type")
+        $allCategories = PreferenceOption::select($fields)
             ->where("type", "category")
             ->get();
 
         // take 20 for sources and authors
-        $authors = PreferenceOption::select("name", "type")
+        $authors = PreferenceOption::select($fields)
             ->where("type", "author")
 //            ->recent()
             ->take(20)
             ->get();
-        $sources = PreferenceOption::select("name", "type")
+        $sources = PreferenceOption::select($fields)
             ->where("type", "source")
 //            ->recent()
             ->take(20)

@@ -37,4 +37,9 @@ class NewsController extends Controller
         $resultCollection = $this->newsRepository->search(searchRequest: $searchRequest);
         return new HomeArticleCollection($resultCollection);
     }
+
+    public function savePreferences()
+    {
+
+    }
 }

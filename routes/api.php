@@ -21,7 +21,11 @@ Route::prefix("v1")->group(function () {
         ->controller(NewsController::class)
         ->group(function () {
             Route::get("/", "home");
-            Route::get("/preferences/options", "preferencesOptions");
             Route::get("/search", "search");
+
+            Route::prefix("preferences")->group(function () {
+                Route::post("/", "savePreferences");
+                Route::get("/options", "preferencesOptions");
+            });
         });
 });
