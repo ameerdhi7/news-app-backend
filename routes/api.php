@@ -23,7 +23,9 @@ Route::prefix("v1")->group(function () {
             Route::get("/", "home");
             Route::get("/search", "search");
 
-            Route::prefix("preferences")->group(function () {
+            Route::prefix("preferences")
+                ->middleware("auth:sanctum")
+                ->group(function () {
                 Route::post("/", "savePreferences");
                 Route::get("/options", "preferencesOptions");
             });
