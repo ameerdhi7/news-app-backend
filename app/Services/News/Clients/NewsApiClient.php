@@ -8,7 +8,6 @@ use App\Models\PreferenceOption;
 use App\Services\News\Interfaces\NewsClientI;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -94,9 +93,6 @@ class NewsApiClient implements NewsClientI
         return collect($mappedArticles);
     }
 
-    function getNewsByUserPreferences(): Collection
-    {
-    }
 
     /**
      * @return array|PreferenceOption[]
@@ -128,7 +124,7 @@ class NewsApiClient implements NewsClientI
      */
     public function getSources(): array
     {
-        $url = " / v2 / top - headlines / sources";
+        $url = " /v2/top-headlines/sources";
         try {
             $response = $this->client->get($url);
             $body = $response->getBody();
@@ -158,5 +154,44 @@ class NewsApiClient implements NewsClientI
             return new PreferenceOption(["name" => $item, "type" => "author"]);
         }, $authors);
         return $mappedResults;
+    }
+
+    public function getByPreferences(Collection $preferences)
+    {
+        $url = "/v2/top-headlines?country=us";
+
+
+        //Adding the categories to the query params
+        $categories = $preferences->where("type", "category");
+        if ($categories->isNotEmpty()) {
+            $categoryNamesArray = $categories->pluck("name")->toArray();
+            foreach ($categoryNamesArray as $categoryName) {
+                $url .= "&category=$categoryName";
+            }
+        }
+
+        //Adding the categories to the query params
+        $sources = $preferences->where("type", "source");
+        if ($sources->isNotEmpty()) {
+            $sourceNamesArray = $sources->pluck("name")->toArray();
+            foreach ($sourceNamesArray as $sourceName) {
+                $url .= "&sources=$sourceName";
+            }
+        }
+
+        $limit = config("api.preferences_results_limit_per_client");
+        if ($limit) {
+            $url .= "&pageSize=$limit";
+        }
+        //doing the api call
+        try {
+            $response = $this->client->get($url);
+            $body = $response->getBody();
+            $decodedBody = json_decode($body, true);
+            $articles = $decodedBody["articles"];
+            return $this->mapResult($articles);
+        } catch (GuzzleException $httpClientException) {
+            Log::error($httpClientException->getMessage());
+        }
     }
 }

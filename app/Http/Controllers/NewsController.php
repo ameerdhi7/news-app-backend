@@ -6,7 +6,9 @@ use App\Http\Requests\SavePreferencesRequest;
 use App\Http\Requests\SearchRequest;
 use App\Http\Resources\HomeArticleCollection;
 use App\Http\Resources\PreferenceOptionsCollection;
+use App\Models\User;
 use App\Repositories\Interfaces\NewsRepositoryI;
+use http\Env\Response;
 
 class NewsController extends Controller
 {
@@ -19,9 +21,16 @@ class NewsController extends Controller
     /**
      * @return HomeArticleCollection
      */
-    public function home(): HomeArticleCollection
+    public function home()
     {
-        $resultCollection = $this->newsRepository->getHomeFeed();
+        $user = auth('sanctum')->user();
+        $fetchPersonalizedNews = !!($user);
+        if ($fetchPersonalizedNews) {
+            $preferences = $user->preferences()->get();
+            $resultCollection = $this->newsRepository->getNewsByPreferences($preferences);
+        } else {
+            $resultCollection = $this->newsRepository->getHomeFeed();
+        }
 
         return new HomeArticleCollection($resultCollection);
     }

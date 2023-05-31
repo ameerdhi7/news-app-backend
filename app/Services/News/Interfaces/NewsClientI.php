@@ -5,7 +5,6 @@ namespace App\Services\News\Interfaces;
 use App\Http\Requests\SearchRequest;
 use App\Models\Article;
 use App\Models\PreferenceOption;
-use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Collection;
 
 interface NewsClientI
@@ -27,9 +26,9 @@ interface NewsClientI
     public function mapResult(array $articles): Collection;
 
     /**
-     * @return Collection
+     * @return Collection|null
      */
-    public function getNewsByUserPreferences(): Collection;
+    public function getByPreferences(Collection $preferences);
 
     /**
      * @return array<PreferenceOption>

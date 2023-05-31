@@ -4,7 +4,6 @@ namespace App\Repositories;
 
 use App\Http\Requests\SearchRequest;
 use App\Models\PreferenceOption;
-use App\Models\User;
 use App\Repositories\Interfaces\NewsRepositoryI;
 use App\Services\News\FetchNewsService;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -18,7 +17,8 @@ class NewsRepository implements NewsRepositoryI
     public function getHomeFeed(): Collection
     {
         $newsService = new FetchNewsService();
-        return $newsService->getNews();
+        $asCollection = $newsService->getNews();
+        return $asCollection->flatten();
     }
 
     /**
@@ -28,34 +28,47 @@ class NewsRepository implements NewsRepositoryI
     public function getPreferencesOptions(): Collection
     {
         $fields = ["id", "name", "type"];
-        // all categories should be returned
+
+        // Retrieve all categories
         $allCategories = PreferenceOption::select($fields)
             ->where("type", "category")
             ->get();
 
-        // take 20 for sources and authors
+        // Retrieve 20 authors and 20 sources
         $authors = PreferenceOption::select($fields)
             ->where("type", "author")
-//            ->recent()
             ->take(20)
             ->get();
         $sources = PreferenceOption::select($fields)
             ->where("type", "source")
-//            ->recent()
             ->take(20)
             ->get();
 
-        // merge results
-        $mergedCollection = array_merge(
+        // Merge the results into a single array
+        $mergedResults = array_merge(
             $allCategories->toArray(),
             $authors->toArray(),
             $sources->toArray(),
         );
-        $mergedCollection = collect($mergedCollection);
-        //group by type
-        $groupedByType = $mergedCollection->groupBy("type");
 
-        return $groupedByType;
+        // Convert the merged results into a collection
+        $asCollection = collect($mergedResults);
+
+        // Retrieve the user's preferences
+        $userPreferences = auth()->user()->preferences()->get();
+
+        // Merge the options collection with user preferences
+        $mergedCollection = $asCollection->map(function ($option) use ($userPreferences) {
+            $matchingPreference = $userPreferences->where('id', $option['id'])->first();
+            $option['checked'] = !is_null($matchingPreference);
+            return $option;
+        });
+
+        // Group the merged collection by the 'type' field
+        $processedGroupedByType = $mergedCollection->groupBy("type");
+
+        // Return the processed collection grouped by type
+        return $processedGroupedByType;
     }
 
     /**
@@ -101,6 +114,13 @@ class NewsRepository implements NewsRepositoryI
         }
 
         return $mappedPreferences;
+    }
+
+    public function getNewsByPreferences(Collection $preferences): Collection
+    {
+        $newsService = new FetchNewsService();
+        $newByPreferences = $newsService->getNewsByPreferences($preferences);
+        return $newByPreferences->flatten();
     }
 
 }

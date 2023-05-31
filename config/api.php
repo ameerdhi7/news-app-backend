@@ -9,6 +9,7 @@ return [
             "access_token" => env("NEW_API_TOKEN"),
             "class" => NewsApiClient::class
         ],
-    ]
+    ],
+    "preferences_results_limit_per_client" => 10,
 
 ];

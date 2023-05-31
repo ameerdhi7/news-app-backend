@@ -4,7 +4,7 @@ namespace App\Services\News;
 
 use App\Http\Requests\SearchRequest;
 use App\Models\PreferenceOption;
-use mysql_xdevapi\Collection;
+use Illuminate\Support\Collection;
 
 class FetchNewsService
 {
@@ -78,6 +78,15 @@ class FetchNewsService
             $results[] = (new $client)->search(searchRequest: $searchRequest);
         }
         return $results;
+    }
+
+    public function getNewsByPreferences(Collection $preferences)
+    {
+        $results = [];
+        foreach ($this->clients as $client) {
+            $results[] = (new $client)->getByPreferences($preferences);
+        }
+        return collect($results);
     }
 
 
