@@ -21,7 +21,7 @@ class NewsController extends Controller
     /**
      * @return HomeArticleCollection
      */
-    public function home()
+    public function home(): HomeArticleCollection
     {
         $user = auth('sanctum')->user();
         $fetchPersonalizedNews = !!($user);
