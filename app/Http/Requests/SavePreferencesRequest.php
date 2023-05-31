@@ -8,7 +8,7 @@ use Illuminate\Validation\Rule;
 
 class SavePreferencesRequest extends FormRequest
 {
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
@@ -16,18 +16,18 @@ class SavePreferencesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'preferences.category' => ['array'],
-            'preferences.category.*' => [
+            'categories' => ['array'],
+            'categories.*' => [
                 'required',
                 Rule::exists('preference_options', 'id')->where('type', 'category')
             ],
-            'preferences.author' => ['array'],
-            'preferences.author.*' => [
+            'authors' => ['array'],
+            'authors.*' => [
                 'required',
                 Rule::exists('preference_options', 'id')->where('type', 'author')
             ],
-            'preferences.source' => ['array'],
-            'preferences.source.*' => [
+            'sources' => ['array'],
+            'sources.*' => [
                 'required',
                 Rule::exists('preference_options', 'id')->where('type', 'source')
             ],

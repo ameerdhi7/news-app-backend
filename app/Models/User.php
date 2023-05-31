@@ -42,9 +42,16 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function preferences(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function preferences()
     {
-        return $this->hasMany(UserPreference::class);
+        return $this->belongsToMany(
+            PreferenceOption::class,
+            "user_preferences",
+//            "user_id",
+//            "preference_option_id",
+//            "users.id",
+//            "user_preferences.id"
+        );
     }
 
 }

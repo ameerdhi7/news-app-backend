@@ -46,8 +46,9 @@ class NewsController extends Controller
         // Get the authenticated user
         $user = $request->user();
 
+
         // Retrieve the preferences from the validated request data
-        $preferences = $request->input('preferences');
+        $preferences = $request->validated();
 
         // Save the preferences to the user
         $this->newsRepository->savePreferences($user, $preferences);

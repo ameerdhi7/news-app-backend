@@ -78,7 +78,7 @@ class NewsRepository implements NewsRepositoryI
     public function savePreferences(Authenticatable $user, array $preferences)
     {
         // Retrieve the user's current preferences
-        $currentPreferences = $user->preferences()->pluck('id')->toArray();
+        $currentPreferences = $user->preferences()->pluck('preference_option_id')->toArray();
 
         // Determine the preferences to attach and detach
         $newPreferences = $this->mapPreferences($preferences);
