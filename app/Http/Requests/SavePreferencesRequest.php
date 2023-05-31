@@ -13,20 +13,20 @@ class SavePreferencesRequest extends FormRequest
         return true;
     }
 
-    public function rules()
+    public function rules(): array
     {
         return [
-            'preferences.category' => ['required', 'array'],
+            'preferences.category' => ['array'],
             'preferences.category.*' => [
                 'required',
                 Rule::exists('preference_options', 'id')->where('type', 'category')
             ],
-            'preferences.author' => ['required', 'array'],
+            'preferences.author' => ['array'],
             'preferences.author.*' => [
                 'required',
                 Rule::exists('preference_options', 'id')->where('type', 'author')
             ],
-            'preferences.source' => ['required', 'array'],
+            'preferences.source' => ['array'],
             'preferences.source.*' => [
                 'required',
                 Rule::exists('preference_options', 'id')->where('type', 'source')

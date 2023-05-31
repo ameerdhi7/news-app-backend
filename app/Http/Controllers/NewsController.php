@@ -41,8 +41,10 @@ class NewsController extends Controller
 
     public function savePreferences(SavePreferencesRequest $request): \Illuminate\Http\JsonResponse
     {
+
+
         // Get the authenticated user
-        $user = auth()->user();
+        $user = $request->user();
 
         // Retrieve the preferences from the validated request data
         $preferences = $request->input('preferences');
