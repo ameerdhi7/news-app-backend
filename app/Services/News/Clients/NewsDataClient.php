@@ -25,23 +25,24 @@ class NewsDataClient implements NewsClientI
     public function getClient(): Client
     {
         $baseUrl = config("api.clients.news_data_service.base_url");
-        $accessToken = config("api.clients.news_data_service.access_token");
 
         $config = [
             "base_uri" => $baseUrl,
-            "headers" => ["X-Api-Key" => $accessToken] //handle auth by attach the auth header
         ];
         return new Client($config);
     }
 
     public function getNews(): Collection
     {
-        $url = "/v2/latest-headlines?lang=en";
+        $url = "/api/1/news?language=en";
+        $url = $this->addAuthParam($url);
+        $limit = config("api.home_results_limit_per_client");
         try {
             $response = $this->client->get($url);
             $body = $response->getBody();
             $decodedBody = json_decode($body, true);
-            $articles = $decodedBody["articles"];
+            $articles = $decodedBody["results"];
+            $articles = array_slice($articles, 0, $limit);
             return $this->mapResult($articles);
         } catch (GuzzleException $httpClientException) {
             Log::error($httpClientException->getMessage());
@@ -50,21 +51,22 @@ class NewsDataClient implements NewsClientI
 
     public function search(SearchRequest $searchRequest): Collection
     {
-        $url = "/v2/everything?";
+        $url = "/api/1/news?language=en";
+        $url = $this->addAuthParam($url);
         $limit = config("api.search_results_limit_per_client");
         $options = $searchRequest->validated();
         $query = $options["searchQuery"];
-        $url .= "q={$query}";
-        $containSource = isset($options["source"]);
-        if ($containSource) {
-            $url .= "&sources={$options["source"]}";
+        $url .= "&q={$query}";
+        $containCategory = isset($options["category"]);
+        if ($containCategory) {
+            $url .= "&category={$options["category"]}";
         }
-        $url .= "&pageSize={$limit}";
         try {
             $response = $this->client->get($url);
             $body = $response->getBody();
             $decodedBody = json_decode($body, true);
-            $articles = $decodedBody["articles"];
+            $articles = $decodedBody["results"];
+            $articles = array_slice($articles, 0, $limit);
             return $this->mapResult($articles);
         } catch (GuzzleException $httpClientException) {
             Log::error($httpClientException->getMessage());
@@ -77,9 +79,9 @@ class NewsDataClient implements NewsClientI
             return new Article([
                 "title" => $article["title"],
                 "description" => $article["description"],
-                "author" => $article["author"],
-                "image_url" => null,
-                "source" => $article["publisher"],
+                "author" => $article["creator"] ? implode("-", $article["creator"]) : null,
+                "image_url" => $article["image_url"],
+                "source" => $article["source_id"],
             ]);
         }, $articles);
         return collect($results);
@@ -87,37 +89,25 @@ class NewsDataClient implements NewsClientI
 
     public function getByPreferences(Collection $preferences)
     {
-        $url = "/v2/top-headlines?country=us";
-
-
+        $url = "/v2/top-headlines?language=en";
+        $url = $this->addAuthParam($url);
         //Adding the categories to the query params
         $categories = $preferences->where("type", "category");
         if ($categories->isNotEmpty()) {
             $categoryNamesArray = $categories->pluck("name")->toArray();
-            foreach ($categoryNamesArray as $categoryName) {
-                $url .= "&category=$categoryName";
-            }
+            //take 5 as this the api limit
+            $categoryNamesArray = array_slice($categoryNamesArray, 0, 5);
+            $categoryNames = implode(",", $categoryNamesArray);
+            $url .= "&category=$categoryNames";
         }
-
-        //Adding the categories to the query params
-        $sources = $preferences->where("type", "source");
-        if ($sources->isNotEmpty()) {
-            $sourceNamesArray = $sources->pluck("name")->toArray();
-            foreach ($sourceNamesArray as $sourceName) {
-                $url .= "&sources=$sourceName";
-            }
-        }
-
         $limit = config("api.preferences_results_limit_per_client");
-        if ($limit) {
-            $url .= "&pageSize=$limit";
-        }
         //doing the api call
         try {
             $response = $this->client->get($url);
             $body = $response->getBody();
             $decodedBody = json_decode($body, true);
-            $articles = $decodedBody["articles"];
+            $articles = $decodedBody["results"];
+            $articles = array_slice($articles, 0, $limit);
             return $this->mapResult($articles);
         } catch (GuzzleException $httpClientException) {
             Log::error($httpClientException->getMessage());
@@ -138,5 +128,11 @@ class NewsDataClient implements NewsClientI
     public function getAuthors(): array
     {
         return [];
+    }
+
+    private function addAuthParam(string $url): string
+    {
+        $accessToken = config("api.clients.news_data_service.access_token");
+        return "{$url}&apikey={$accessToken}";
     }
 }
