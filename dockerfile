@@ -29,14 +29,14 @@ COPY . /var/www/html
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Set up environment variables
-ENV PG_HOST=postgres
-ENV PG_DATABASE=laravel
-ENV PG_USERNAME=laravel
-ENV PG_PASSWORD=secret
+ENV DB_HOST=postgres
+ENV DB_DATABASE=laravel
+ENV DB_USERNAME=laravel
+ENV DB_PASSWORD=secret
 
 # Install application dependencies and run database migrations
 RUN composer install --no-interaction --no-scripts --no-progress --prefer-dist \
-    && php artisan migrate --force
+    &&php artisan key:generate&& php artisan migrate --force
 
 # Expose port 9000 for PHP-FPM
 EXPOSE 9000

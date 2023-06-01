@@ -37,7 +37,9 @@ class NewsCatcherClient implements NewsClientI
 
     public function getNews(): Collection
     {
-        $url = "/v2/latest-headlines?lang=en";
+        $url = "/v2/latest_headlines?countries=US&lang=en";
+        $limit = config("api.home_results_limit_per_client");
+        $url .= "&page_size={$limit}";
         try {
             $response = $this->client->get($url);
             $body = $response->getBody();
@@ -52,16 +54,20 @@ class NewsCatcherClient implements NewsClientI
 
     public function search(SearchRequest $searchRequest): Collection
     {
-        $url = "/v2/everything?";
         $limit = config("api.search_results_limit_per_client");
+        $url = "/v2/search?lang=en";
         $options = $searchRequest->validated();
         $query = $options["searchQuery"];
-        $url .= "q={$query}";
-        $containSource = isset($options["source"]);
-        if ($containSource) {
-            $url .= "&sources={$options["source"]}";
+        $url .= "&q={$query}";
+        $containCategory = isset($options["category"]);
+        if ($containCategory) {
+            $url .= "&topic={$options["category"]}";
         }
-        $url .= "&pageSize={$limit}";
+        $containDate = isset($options["date"]);
+        if ($containDate) {
+            $url .= "&from{$options["date"]}";
+        }
+        $url .= "&page_size={$limit}";
         try {
             $response = $this->client->get($url);
             $body = $response->getBody();
@@ -78,10 +84,10 @@ class NewsCatcherClient implements NewsClientI
         $results = array_map(function ($article) {
             return new Article([
                 "title" => $article["title"],
-                "description" => $article["description"],
+                "description" => $article["summary"],
                 "author" => $article["author"],
-                "image_url" => null,
-                "source" => $article["publisher"],
+                "image_url" => $article["media"],
+                "source" => $article["clean_url"],
             ]);
         }, $articles);
         return collect($results);
@@ -92,28 +98,16 @@ class NewsCatcherClient implements NewsClientI
     {
         $url = "/v2/top-headlines?country=us";
 
-
-        //Adding the categories to the query params
-        $categories = $preferences->where("type", "category");
-        if ($categories->isNotEmpty()) {
-            $categoryNamesArray = $categories->pluck("name")->toArray();
-            foreach ($categoryNamesArray as $categoryName) {
-                $url .= "&category=$categoryName";
-            }
-        }
-
-        //Adding the categories to the query params
+        //Adding the sources to the query params
         $sources = $preferences->where("type", "source");
         if ($sources->isNotEmpty()) {
             $sourceNamesArray = $sources->pluck("name")->toArray();
-            foreach ($sourceNamesArray as $sourceName) {
-                $url .= "&sources=$sourceName";
-            }
+            $sourceNames = implode(",", $sourceNamesArray);
+            $url .= "&sources=$sourceNames";
         }
-
         $limit = config("api.preferences_results_limit_per_client");
         if ($limit) {
-            $url .= "&pageSize=$limit";
+            $url .= "&page_size=$limit";
         }
         //doing the api call
         try {
