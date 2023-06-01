@@ -56,6 +56,7 @@ class NewsApiClient implements NewsClientI
     public function search(SearchRequest $searchRequest): Collection
     {
         $url = "/v2/everything?";
+        $limit = config("api.search_results_limit_per_client");
         $options = $searchRequest->validated();
         $query = $options["searchQuery"];
         $url .= "q={$query}";
@@ -63,7 +64,7 @@ class NewsApiClient implements NewsClientI
         if ($containSource) {
             $url .= "&sources={$options["source"]}";
         }
-        $url .= "&pageSize=5";
+        $url .= "&pageSize={$limit}";
         try {
             $response = $this->client->get($url);
             $body = $response->getBody();
@@ -73,7 +74,6 @@ class NewsApiClient implements NewsClientI
         } catch (GuzzleException $httpClientException) {
             Log::error($httpClientException->getMessage());
         }
-
     }
 
     public function mapResult(array $articles): Collection

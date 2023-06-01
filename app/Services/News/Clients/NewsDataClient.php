@@ -48,9 +48,27 @@ class NewsDataClient implements NewsClientI
         }
     }
 
-    public function search(SearchRequest $searchRequest)
+    public function search(SearchRequest $searchRequest): Collection
     {
-        // TODO: Implement search() method.
+        $url = "/v2/everything?";
+        $limit = config("api.search_results_limit_per_client");
+        $options = $searchRequest->validated();
+        $query = $options["searchQuery"];
+        $url .= "q={$query}";
+        $containSource = isset($options["source"]);
+        if ($containSource) {
+            $url .= "&sources={$options["source"]}";
+        }
+        $url .= "&pageSize={$limit}";
+        try {
+            $response = $this->client->get($url);
+            $body = $response->getBody();
+            $decodedBody = json_decode($body, true);
+            $articles = $decodedBody["articles"];
+            return $this->mapResult($articles);
+        } catch (GuzzleException $httpClientException) {
+            Log::error($httpClientException->getMessage());
+        }
     }
 
     public function mapResult(array $articles): Collection
@@ -114,6 +132,7 @@ class NewsDataClient implements NewsClientI
 
     public function getSources(): array
     {
+        return [];
     }
 
     public function getAuthors(): array

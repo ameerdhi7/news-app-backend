@@ -28,4 +28,6 @@ return [
     "sources_results_limit_per_client" => 5,
 
     "home_results_limit_per_client" => 10,
+
+    "search_results_limit_per_client" => 5,
 ];

@@ -3,6 +3,7 @@
 namespace App\Services\News\Clients;
 
 use App\Http\Requests\SearchRequest;
+use App\Models\Article;
 use App\Models\PreferenceOption;
 use App\Services\News\Interfaces\NewsClientI;
 use GuzzleHttp\Client;
@@ -49,15 +50,43 @@ class NewsCatcherClient implements NewsClientI
     }
 
 
-    public function search(SearchRequest $searchRequest)
+    public function search(SearchRequest $searchRequest): Collection
     {
-        // TODO: Implement search() method.
+        $url = "/v2/everything?";
+        $limit = config("api.search_results_limit_per_client");
+        $options = $searchRequest->validated();
+        $query = $options["searchQuery"];
+        $url .= "q={$query}";
+        $containSource = isset($options["source"]);
+        if ($containSource) {
+            $url .= "&sources={$options["source"]}";
+        }
+        $url .= "&pageSize={$limit}";
+        try {
+            $response = $this->client->get($url);
+            $body = $response->getBody();
+            $decodedBody = json_decode($body, true);
+            $articles = $decodedBody["articles"];
+            return $this->mapResult($articles);
+        } catch (GuzzleException $httpClientException) {
+            Log::error($httpClientException->getMessage());
+        }
     }
 
     public function mapResult(array $articles): Collection
     {
-        // TODO: Implement mapResult() method.
+        $results = array_map(function ($article) {
+            return new Article([
+                "title" => $article["title"],
+                "description" => $article["description"],
+                "author" => $article["author"],
+                "image_url" => null,
+                "source" => $article["publisher"],
+            ]);
+        }, $articles);
+        return collect($results);
     }
+
 
     public function getByPreferences(Collection $preferences)
     {
@@ -137,6 +166,6 @@ class NewsCatcherClient implements NewsClientI
 
     public function getAuthors(): array
     {
-        // TODO: Implement getAuthors() method.
+        return [];
     }
 }
