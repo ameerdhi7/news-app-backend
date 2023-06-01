@@ -38,7 +38,7 @@ This is the backend project for the news aggregator application. It provides the
     - `DB_DATABASE`: Database name
     - `DB_USERNAME`: Database username
     - `DB_PASSWORD`: Database password
-    - Other configuration variables as required
+    - For news sources apis client refer to the .`env.example ` and obtain your own access keys
 
 2. Configure Sanctum for API authentication:
     - Enable Sanctum in `config/auth.php` file
